@@ -1,35 +1,151 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class DPStrategy : IStrategy
 {
-    // DP ²ßÂÔ£º¼«Æä¹¦Àû£¬Ö»¿´¾ø¶Ô¼ÛÖµ£¬²»¹Ë¾àÀëºÍÑ¹Á¦
-    // Ä£ÄâÒ»ÖÖ¡°ÎªÁË¸ß»Ø±¨²»Ï§Ò»ÇĞ´ú¼Û¡±µÄĞĞ¶¯Ä£Ê½
+    // --- ç¼“å­˜æ§åˆ¶ ---
+    private ItemEntity currentTarget;
+    private float lastCalculationTime;
+    private const float RECALC_INTERVAL = 0.5f; 
+
+    // --- ç®—æ³•å‚æ•° ---
+    private const int MAX_DEPTH = 3; 
+    
+    // --- ä¼°ç®—å‚æ•° ---
+    private const float BASE_SPEED = 5f;
+    private const float MIN_SPEED = 1f;
+
+    // å¤ç”¨ HashSet ä»¥å‡å°‘ GC
+    private HashSet<ItemEntity> visitedSet = new HashSet<ItemEntity>();
 
     public Vector2 CalculateMove(PlayerEntity player, List<ItemEntity> allItems)
     {
-        ItemEntity bestTarget = null;
-        float maxVal = float.MinValue;
-
-        foreach (var item in allItems)
+        if (currentTarget != null)
         {
-            if (item == null) continue;
-
-            // ¼òµ¥´Ö±©£ºÖ»ÕÒÈ«Í¼¼ÛÖµ×î¸ßµÄÄÇ¸ö
-            // ÕâÖÖĞĞÎª»áµ¼ÖÂÍæ¼ÒÂúµØÍ¼ÂÒÅÜÈ¥×·¸ß·Ö£¬Ğ§ÂÊµÍÇÒÀÛ£¬·ûºÏ¡°ÎªÁËĞéÃû¶ø±¼²¨¡±µÄÒşÓ÷
-            if (item.eventData.value > maxVal)
+            if (!allItems.Contains(currentTarget) || currentTarget == null || !currentTarget.gameObject.activeInHierarchy) 
             {
-                maxVal = item.eventData.value;
-                bestTarget = item;
+                currentTarget = null;
             }
         }
 
-        if (bestTarget != null)
+        if (currentTarget == null || Time.time - lastCalculationTime > RECALC_INTERVAL)
         {
-            return (bestTarget.transform.position - player.transform.position).normalized;
+            currentTarget = FindBestPath(player, allItems);
+            lastCalculationTime = Time.time;
         }
+
+        if (currentTarget != null)
+        {
+            return (currentTarget.transform.position - player.transform.position).normalized;
+        }
+
         return Vector2.zero;
     }
 
-    public string GetStrategyName() => "¹¦ÀûÖ÷Òå (AI)";
+    private ItemEntity FindBestPath(PlayerEntity player, List<ItemEntity> items)
+    {
+        // è¿‡æ»¤æ— æ•ˆç‰©å“
+        List<ItemEntity> availableItems = items.Where(i => i != null && i.gameObject.activeInHierarchy).ToList();
+        if (availableItems.Count == 0) return null;
+
+        SimState startState = new SimState(
+            player.transform.position,
+            GameManager.Instance.timeRemaining,
+            player.currentStress,
+            player.currentWeight,
+            player.maxWeight
+        );
+
+        float maxScore = float.MinValue;
+        ItemEntity bestFirstStep = null;
+
+        visitedSet.Clear();
+
+        foreach (var item in availableItems)
+        {
+            float score = GetMaxScoreRecursive(item, availableItems, startState, 1, visitedSet);
+            
+            if (score > maxScore)
+            {
+                maxScore = score;
+                bestFirstStep = item;
+            }
+        }
+
+        return bestFirstStep;
+    }
+
+    private float GetMaxScoreRecursive(ItemEntity target, List<ItemEntity> allItems, SimState currentState, int depth, HashSet<ItemEntity> visited)
+    {
+        // 1. è®¡ç®—ç§»åŠ¨æˆæœ¬
+        float distance = Vector2.Distance(currentState.position, target.transform.position);
+        float weightRatio = Mathf.Clamp01((float)currentState.currentWeight / currentState.maxWeight);
+        float estimatedSpeed = Mathf.Lerp(BASE_SPEED, MIN_SPEED, weightRatio);
+        
+        float travelTimeBase = distance / estimatedSpeed;
+        float timeMultiplier = 1f + (currentState.currentStress / 50f);
+        float actualTimeCost = travelTimeBase * timeMultiplier;
+
+        // --- å‰ªææ¡ä»¶ ---
+        if (currentState.remainingTime < actualTimeCost) return 0; 
+        if (currentState.currentWeight + target.eventData.weight > currentState.maxWeight) return -100;
+
+        // --- çŠ¶æ€æ›´æ–° ---
+        float newTime = currentState.remainingTime - actualTimeCost;
+        int newStress = currentState.currentStress + target.eventData.stress;
+        int newWeight = currentState.currentWeight + target.eventData.weight;
+        int gain = target.eventData.value;
+
+        if (newStress > 100) return -500; 
+
+        // --- é€’å½’ç»ˆæ­¢ ---
+        if (depth >= MAX_DEPTH)
+        {
+            return gain;
+        }
+
+        // --- ç»§ç»­æœç´¢ä¸‹ä¸€å±‚ ---
+        SimState newState = new SimState(target.transform.position, newTime, newStress, newWeight, currentState.maxWeight);
+        
+        // ã€ä¼˜åŒ–ã€‘ï¼šä½¿ç”¨å›æº¯é€»è¾‘ï¼Œé¿å…æ¯æ¬¡é€’å½’ new HashSet
+        visited.Add(target); 
+
+        float maxFutureScore = 0;
+        foreach (var nextItem in allItems)
+        {
+            if (nextItem != null && !visited.Contains(nextItem))
+            {
+                float futureScore = GetMaxScoreRecursive(nextItem, allItems, newState, depth + 1, visited);
+                if (futureScore > maxFutureScore)
+                {
+                    maxFutureScore = futureScore;
+                }
+            }
+        }
+
+        visited.Remove(target); // ã€ä¼˜åŒ–ã€‘ï¼šå›æº¯ç§»é™¤æ ‡è®°
+
+        return gain + maxFutureScore;
+    }
+
+    private struct SimState
+    {
+        public Vector2 position;
+        public float remainingTime;
+        public int currentStress;
+        public int currentWeight;
+        public int maxWeight;
+
+        public SimState(Vector2 pos, float time, int stress, int weight, int maxW)
+        {
+            position = pos;
+            remainingTime = time;
+            currentStress = stress;
+            currentWeight = weight;
+            maxWeight = maxW;
+        }
+    }
+
+    public string GetStrategyName() => "åŠ¨æ€è§„åˆ’ (DP)";
 }

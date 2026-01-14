@@ -1,14 +1,14 @@
 using UnityEngine;
-using System; // ±ØĞëÒıÓÃ£¬ÓÃÓÚ Action
+using System; // å¿…é¡»å¼•ç”¨ï¼Œç”¨äº Action
 
 public static class EventManager
 {
-    // ¶¨ÒåÊÂ¼ş£ºµ±Íæ¼ÒÊı¾İ±ä»¯Ê±´¥·¢
-    public static Action<int, int, int> OnStatsChanged; // ²ÎÊı£º¼ÛÖµ, ¸ºÖØ, Ñ¹Á¦
+    // å®šä¹‰äº‹ä»¶ï¼šå½“ç©å®¶æ•°æ®å˜åŒ–æ—¶è§¦å‘
+    public static Action<int, int, int> OnStatsChanged; // å‚æ•°ï¼šä»·å€¼, è´Ÿé‡, å‹åŠ›
 
-    // ¶¨ÒåÊÂ¼ş£ºµ±Ê±¼ä/ÄêÁä±ä»¯Ê±´¥·¢
-    public static Action<float, int> OnTimeChanged; // ²ÎÊı£ºÊ£ÓàÊ±¼ä, µ±Ç°ÄêÁä
+    // å®šä¹‰äº‹ä»¶ï¼šå½“æ—¶é—´/å¹´é¾„å˜åŒ–æ—¶è§¦å‘
+    public static Action<float, int> OnTimeChanged; // å‚æ•°ï¼šå‰©ä½™æ—¶é—´, å½“å‰å¹´é¾„
 
-    // ¶¨ÒåÊÂ¼ş£ºµ±ÓÎÏ·½áÊøÊ±´¥·¢
-    public static Action<string> OnGameOver; // ²ÎÊı£º½á¾ÖÃèÊö
+    // å®šä¹‰äº‹ä»¶ï¼šå½“æ¸¸æˆç»“æŸæ—¶è§¦å‘
+    public static Action<string> OnGameOver; // å‚æ•°ï¼šç»“å±€æè¿°
 }

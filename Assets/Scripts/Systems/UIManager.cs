@@ -5,9 +5,9 @@ using TMPro;
 public class UIManager : MonoBehaviour
 {
     [Header("UI References")]
-    public TMP_Text statsText;   // ÏÔÊ¾£º¼ÛÖµ¡¢¸ºÖØ¡¢Ñ¹Á¦
-    public TMP_Text timeText;    // ÏÔÊ¾£ºµ¹¼ÆÊ±¡¢ÄêÁä
-    public TMP_Text gameOverText;// ÓÎÏ·½áÊøÃæ°å (Ä¬ÈÏÒş²Ø)
+    public TMP_Text statsText;   // æ˜¾ç¤ºï¼šä»·å€¼ã€è´Ÿé‡ã€å‹åŠ›
+    public TMP_Text timeText;    // æ˜¾ç¤ºï¼šå€’è®¡æ—¶ã€å¹´é¾„
+    public TMP_Text gameOverText;// æ¸¸æˆç»“æŸé¢æ¿ (é»˜è®¤éšè—)
     public GameObject gameOverPanel;
 
     [Header("Panels")]
@@ -23,14 +23,14 @@ public class UIManager : MonoBehaviour
     public void ShowLevelUpPanel(int age)
     {
         levelUpPanel.SetActive(true);
-        levelUpTitle.text = $"{age} Ëê½áËã";
+        levelUpTitle.text = $"{age} å²ç»“ç®—";
 
-        // --- ºËĞÄ£º¸ù¾İÄêÁä½âËø²ßÂÔ ---
-        // Ã¿´Î´ò¿ªÃæ°åÇ°£¬ÏÈÖØÖÃËùÓĞ°´Å¥Îª²»¿ÉÓÃ£¬ÔÙ¸ù¾İÄêÁä´ò¿ª
-        btnManual.interactable = true; // ÊÖ¶¯ÓÀÔ¶¿ÉÓÃ
-        btnGreedy.interactable = (age >= 10);    // 10Ëê½âËøÌ°ĞÄ
-        btnDP.interactable = (age >= 20);        // 20Ëê½âËø¶¯Ì¬¹æ»®
-        btnBacktrack.interactable = (age >= 30); // 30Ëê½âËø»ØËİ
+        // --- æ ¸å¿ƒï¼šæ ¹æ®å¹´é¾„è§£é”ç­–ç•¥ ---
+        // æ¯æ¬¡æ‰“å¼€é¢æ¿å‰ï¼Œå…ˆé‡ç½®æ‰€æœ‰æŒ‰é’®ä¸ºä¸å¯ç”¨ï¼Œå†æ ¹æ®å¹´é¾„æ‰“å¼€
+        btnManual.interactable = true; // æ‰‹åŠ¨æ°¸è¿œå¯ç”¨
+        btnGreedy.interactable = (age >= 10);    // 10å²è§£é”è´ªå¿ƒ
+        btnDP.interactable = (age >= 20);        // 20å²è§£é”åŠ¨æ€è§„åˆ’
+        btnBacktrack.interactable = (age >= 30); // 30å²è§£é”å›æº¯
     }
 
     public void HideLevelUpPanel()
@@ -39,7 +39,7 @@ public class UIManager : MonoBehaviour
     }
     void OnEnable()
     {
-        // ¶©ÔÄÊÂ¼ş
+        // è®¢é˜…äº‹ä»¶
         EventManager.OnStatsChanged += UpdateStatsUI;
         EventManager.OnTimeChanged += UpdateTimeUI;
         EventManager.OnGameOver += ShowGameOver;
@@ -47,7 +47,7 @@ public class UIManager : MonoBehaviour
 
     void OnDisable()
     {
-        // È¡Ïû¶©ÔÄ (·ÀÖ¹ÄÚ´æĞ¹Â©)
+        // å–æ¶ˆè®¢é˜… (é˜²æ­¢å†…å­˜æ³„æ¼)
         EventManager.OnStatsChanged -= UpdateStatsUI;
         EventManager.OnTimeChanged -= UpdateTimeUI;
         EventManager.OnGameOver -= ShowGameOver;
@@ -60,21 +60,21 @@ public class UIManager : MonoBehaviour
 
     void UpdateStatsUI(int value, int weight, int stress)
     {
-        statsText.text = $"¼ÛÖµ: {value}\n¸ºÖØ: {weight}\nÑ¹Á¦: {stress}";
+        statsText.text = $"ä»·å€¼: {value}\nè´Ÿé‡: {weight}\nå‹åŠ›: {stress}";
     }
 
     void UpdateTimeUI(float time, int age)
     {
-        timeText.text = $"ÄêÁä: {age}Ëê\nµ¹¼ÆÊ±: {time:F1}s"; // F1 ±íÊ¾±£Áô1Î»Ğ¡Êı
+        timeText.text = $"å¹´é¾„: {age}å²\nå€’è®¡æ—¶: {time:F1}s"; // F1 è¡¨ç¤ºä¿ç•™1ä½å°æ•°
     }
 
     void ShowGameOver(string reason)
     {
-        Debug.Log("UI ½ÓÊÕµ½ÓÎÏ·½áÊøĞÅºÅ£¡"); // ¼ÓÕâ¾äÈÕÖ¾£¡
+        Debug.Log("UI æ¥æ”¶åˆ°æ¸¸æˆç»“æŸä¿¡å·ï¼"); // åŠ è¿™å¥æ—¥å¿—ï¼
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
-            gameOverText.text = $"ÓÎÏ·½áÊø\n\n{reason}";
+            gameOverText.text = $"æ¸¸æˆç»“æŸ\n\n{reason}";
         }
     }
 }

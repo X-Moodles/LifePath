@@ -14,8 +14,8 @@ public class GreedyStrategy : IStrategy
 
             float dist = Vector2.Distance(player.transform.position, item.transform.position);
 
-            // Ì°ĞÄºËĞÄ¹«Ê½£º¼ÛÖµ / ¾àÀë (×·Çóµ¥Î»¾àÀëµÄ×î´ó»Ø±¨)
-            // ·ÀÖ¹³ıÒÔ0
+            // è´ªå¿ƒæ ¸å¿ƒå…¬å¼ï¼šä»·å€¼ / è·ç¦» (è¿½æ±‚å•ä½è·ç¦»çš„æœ€å¤§å›æŠ¥)
+            // é˜²æ­¢é™¤ä»¥0
             if (dist < 0.1f) dist = 0.1f;
 
             float score = item.eventData.value / dist;
@@ -31,8 +31,8 @@ public class GreedyStrategy : IStrategy
         {
             return (bestTarget.transform.position - player.transform.position).normalized;
         }
-        return Vector2.zero; // Ã»¶«Î÷¾Í·¢´ô
+        return Vector2.zero; // æ²¡ä¸œè¥¿å°±å‘å‘†
     }
 
-    public string GetStrategyName() => "Ì°ĞÄÖ±¾õ (AI)";
+    public string GetStrategyName() => "è´ªå¿ƒç›´è§‰ (AI)";
 }

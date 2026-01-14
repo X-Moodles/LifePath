@@ -1,15 +1,15 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class ItemEntity : MonoBehaviour
 {
     [Header("Data Reference")]
-    public LifeEvent_SO eventData; // ÒıÓÃÎÒÃÇÖ®Ç°Ğ´µÄ ScriptableObject
+    public LifeEvent_SO eventData; // å¼•ç”¨æˆ‘ä»¬ä¹‹å‰å†™çš„ ScriptableObject
 
     [Header("Components")]
     private SpriteRenderer sr;
     private CircleCollider2D col;
 
-    // ³õÊ¼»¯·½·¨£º¹¤³§Éú³ÉÊ±µ÷ÓÃ´Ë·½·¨Ìî³äÊı¾İ
+    // åˆå§‹åŒ–æ–¹æ³•ï¼šå·¥å‚ç”Ÿæˆæ—¶è°ƒç”¨æ­¤æ–¹æ³•å¡«å……æ•°æ®
     public void Setup(LifeEvent_SO data)
     {
         eventData = data;
@@ -18,13 +18,13 @@ public class ItemEntity : MonoBehaviour
 
         if (sr != null)
         {
-            // --- ĞŞ¸Ä¿ªÊ¼ ---
-            // Ö»ÓĞµ±Êı¾İÀïÕæµÄÅäÁËÍ¼±êÊ±£¬²ÅÌæ»»
+            // --- ä¿®æ”¹å¼€å§‹ ---
+            // åªæœ‰å½“æ•°æ®é‡ŒçœŸçš„é…äº†å›¾æ ‡æ—¶ï¼Œæ‰æ›¿æ¢
             if (data.icon != null)
             {
                 sr.sprite = data.icon;
             }
-            // --- ĞŞ¸Ä½áÊø ---
+            // --- ä¿®æ”¹ç»“æŸ ---
 
             sr.color = data.tintColor;
         }
@@ -34,12 +34,12 @@ public class ItemEntity : MonoBehaviour
         gameObject.name = $"Item_{data.eventName}";
     }
 
-    // ´¥·¢Âß¼­£ºÖ»¸ºÔğÍ¨Öª£¬²»¸ºÔğ´¦Àí
+    // è§¦å‘é€»è¾‘ï¼šåªè´Ÿè´£é€šçŸ¥ï¼Œä¸è´Ÿè´£å¤„ç†
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            // Í¨ÖªÈ«¾ÖÊÂ¼şÏµÍ³ (ObserverÄ£Ê½µÄ³ûĞÎ)
+            // é€šçŸ¥å…¨å±€äº‹ä»¶ç³»ç»Ÿ (Observeræ¨¡å¼çš„é›å½¢)
             GameManager.Instance.OnItemCollected(this);
         }
     }

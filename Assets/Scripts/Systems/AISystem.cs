@@ -7,28 +7,28 @@ public class AISystem : MonoBehaviour
     public PlayerEntity player;
     public MapSystem mapSystem;
 
-    // µ±Ç°¼¤»îµÄ²ßÂÔ
+    // å½“å‰æ¿€æ´»çš„ç­–ç•¥
     private IStrategy currentStrategy;
 
-    // ³¡¾°ÖĞËùÓĞÎïÆ·µÄÁĞ±í (AI µÄ¸ĞÖª·¶Î§)
-    // ×¢Òâ£ºÕâĞèÒª GameManager Î¬»¤£¬»òÕßÎÒÃÇÔÚÕâÀï¼òµ¥ËÑË÷
+    // åœºæ™¯ä¸­æ‰€æœ‰ç‰©å“çš„åˆ—è¡¨ (AI çš„æ„ŸçŸ¥èŒƒå›´)
+    // æ³¨æ„ï¼šè¿™éœ€è¦ GameManager ç»´æŠ¤ï¼Œæˆ–è€…æˆ‘ä»¬åœ¨è¿™é‡Œç®€å•æœç´¢
     private List<ItemEntity> perceivedItems = new List<ItemEntity>();
 
     void Start()
     {
-        // Ä¬ÈÏ²ßÂÔ£ºÊÖ¶¯
+        // é»˜è®¤ç­–ç•¥ï¼šæ‰‹åŠ¨
         SetStrategy(new ManualStrategy());
 
-        // ³õÊ¼»¯¸ĞÖªÁĞ±í (ÔİÊ±¼òµ¥´¦Àí£¬Ã¿Ö¡ÕÒÌ«·ÑĞÔÄÜ£¬½¨ÒéÈÃ GameManager ´«½øÀ´)
-        // Step 4 ÎÒÃÇ»áÍêÉÆµØÍ¼¹ÜÀí£¬ÕâÀïÏÈÔİÊ±Áô¿Õ
+        // åˆå§‹åŒ–æ„ŸçŸ¥åˆ—è¡¨ (æš‚æ—¶ç®€å•å¤„ç†ï¼Œæ¯å¸§æ‰¾å¤ªè´¹æ€§èƒ½ï¼Œå»ºè®®è®© GameManager ä¼ è¿›æ¥)
+        // Step 4 æˆ‘ä»¬ä¼šå®Œå–„åœ°å›¾ç®¡ç†ï¼Œè¿™é‡Œå…ˆæš‚æ—¶ç•™ç©º
     }
 
     void Update()
     {
-        // --- ĞÂÔö£ºÈç¹ûÓÎÏ·ÔİÍ£»òÃ»¿ªÊ¼£¬AI ¾Í²»¹¤×÷ ---
+        // --- æ–°å¢ï¼šå¦‚æœæ¸¸æˆæš‚åœæˆ–æ²¡å¼€å§‹ï¼ŒAI å°±ä¸å·¥ä½œ ---
         if (GameManager.Instance == null || GameManager.Instance.isPaused)
         {
-            // Ë³±ã°ÑÍæ¼ÒµÄÊäÈëÇåÁã£¬·ÀÖ¹¹ßĞÔ»¬ĞĞ
+            // é¡ºä¾¿æŠŠç©å®¶çš„è¾“å…¥æ¸…é›¶ï¼Œé˜²æ­¢æƒ¯æ€§æ»‘è¡Œ
             if (player != null) player.moveInput = Vector2.zero;
             return;
         }
@@ -36,31 +36,31 @@ public class AISystem : MonoBehaviour
 
         if (player == null || currentStrategy == null) return;
 
-        // 1. »ñÈ¡¸ĞÖªµ½µÄÎïÆ· (¼òµ¥´Ö±©°æ£ºÕÒ³¡¾°ÀïËùÓĞ ItemEntity)
-        // ÓÅ»¯½¨Òé£ºÒÔºó¸ÄÎª´Ó MapSystem »ñÈ¡
+        // 1. è·å–æ„ŸçŸ¥åˆ°çš„ç‰©å“ (ç®€å•ç²—æš´ç‰ˆï¼šæ‰¾åœºæ™¯é‡Œæ‰€æœ‰ ItemEntity)
+        // ä¼˜åŒ–å»ºè®®ï¼šä»¥åæ”¹ä¸ºä» MapSystem è·å–
         //perceivedItems.Clear();
         //perceivedItems.AddRange(FindObjectsOfType<ItemEntity>());
-        // [ÓÅ»¯ºó] Ö±½Ó´Ó MapSystem »ñÈ¡ÁĞ±í£¬²»ÓÃÈ«³¡¾°ËÑË÷ÁË
-        // Èç¹û MapSystem »¹Ã»¸³Öµ£¬ÎªÁË·ÀÖ¹±¨´í£¬ÏÈÅĞ¿Õ
+        // [ä¼˜åŒ–å] ç›´æ¥ä» MapSystem è·å–åˆ—è¡¨ï¼Œä¸ç”¨å…¨åœºæ™¯æœç´¢äº†
+        // å¦‚æœ MapSystem è¿˜æ²¡èµ‹å€¼ï¼Œä¸ºäº†é˜²æ­¢æŠ¥é”™ï¼Œå…ˆåˆ¤ç©º
         List<ItemEntity> items = mapSystem != null ? mapSystem.spawnedItems : new List<ItemEntity>();
 
-        // 2. ²ßÂÔÄ£Ê½£º¼ÆËã·½Ïò
+        // 2. ç­–ç•¥æ¨¡å¼ï¼šè®¡ç®—æ–¹å‘
         Vector2 intention = currentStrategy.CalculateMove(player, items);
 
-        // 3. Êä³öĞÅºÅ¸ø PlayerEntity
+        // 3. è¾“å‡ºä¿¡å·ç»™ PlayerEntity
         player.moveInput = intention;
 
-        // ²âÊÔ´úÂë£º°´¼üÇĞ»»²ßÂÔ
+        // æµ‹è¯•ä»£ç ï¼šæŒ‰é”®åˆ‡æ¢ç­–ç•¥
         if (Input.GetKeyDown(KeyCode.Alpha1)) SetStrategy(new ManualStrategy());
         if (Input.GetKeyDown(KeyCode.Alpha2)) SetStrategy(new GreedyStrategy());
         if (Input.GetKeyDown(KeyCode.Alpha3)) SetStrategy(new BacktrackStrategy());
     }
 
-    // ¹«¿ª·½·¨£º¹© UI °´Å¥ÇĞ»»²ßÂÔ
+    // å…¬å¼€æ–¹æ³•ï¼šä¾› UI æŒ‰é’®åˆ‡æ¢ç­–ç•¥
     public void SetStrategy(IStrategy newStrategy)
     {
         currentStrategy = newStrategy;
-        Debug.Log($"ÇĞ»»²ßÂÔÎª£º{currentStrategy.GetStrategyName()}");
+        Debug.Log($"åˆ‡æ¢ç­–ç•¥ä¸ºï¼š{currentStrategy.GetStrategyName()}");
     }
     public void SetStrategyByName(string name)
     {
@@ -68,7 +68,7 @@ public class AISystem : MonoBehaviour
         {
             case "Manual": SetStrategy(new ManualStrategy()); break;
             case "Greedy": SetStrategy(new GreedyStrategy()); break;
-            case "DP": SetStrategy(new DPStrategy()); break; // »¹Ã»Ğ´DPÒÆ¶¯°æµÄ»°£¬¿ÉÒÔÏÈÓÃGreedy´úÌæ
+            case "DP": SetStrategy(new DPStrategy()); break; // è¿˜æ²¡å†™DPç§»åŠ¨ç‰ˆçš„è¯ï¼Œå¯ä»¥å…ˆç”¨Greedyä»£æ›¿
             case "Backtrack": SetStrategy(new BacktrackStrategy()); break;
         }
     }

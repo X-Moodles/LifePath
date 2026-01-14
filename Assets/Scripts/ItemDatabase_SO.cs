@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "ItemDatabase", menuName = "LifePath/Item Database")]
@@ -6,7 +6,7 @@ public class ItemDatabase_SO : ScriptableObject
 {
     public List<LifeEvent_SO> allEvents;
 
-    // ¹¤¾ß·½·¨£ºËæ»ú»ñÈ¡Ò»¸öÊÂ¼ş
+    // å·¥å…·æ–¹æ³•ï¼šéšæœºè·å–ä¸€ä¸ªäº‹ä»¶
     public LifeEvent_SO GetRandomEvent()
     {
         if (allEvents.Count == 0) return null;

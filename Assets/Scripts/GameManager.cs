@@ -1,149 +1,149 @@
 using UnityEngine;
-using System.Collections; // ÓÃÓÚĞ­³Ì
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Á÷³ÌÅäÖÃ")]
-    public int currentAge = 0; // ´Ó0Ëê¿ªÊ¼
-    public int ageStep = 10;   // Ã¿¹Ø10Ëê
-    public float timeLimit = 60f; // Ã¿¹Ø60Ãë
+    [Header("åŸºæœ¬é…ç½®")]
+    public int currentAge = 0; 
+    public int ageStep = 10;   
+    public float timeLimit = 60f; 
+    public float stressLimit = 100f; // ä¿®æ­£å‹åŠ›ä¸Šé™ä¸º 100
 
-    [Header("ÔËĞĞÊ±×´Ì¬")]
+    [Header("å®æ—¶çŠ¶æ€")]
     public float timeRemaining;
-    public bool isPaused = false; // ÔİÍ£±êÖ¾
+    public bool isPaused = false; 
 
-    [Header("ÒıÓÃ")]
+    // è®°å½•ä¸Šä¸€æ¬¡å‘é€ç»™ UI çš„æ•°å€¼ï¼Œç”¨äºå‡å°‘é‡å¤åˆ·æ–°
+    private float lastTimeSent;
+    private int lastValueSent;
+    private int lastWeightSent;
+    private int lastStressSent;
+
+    [Header("å¼•ç”¨")]
     public PlayerEntity player;
     public MapSystem mapSystem;
     public AISystem aiSystem;
-    public UIManager uiManager; // ĞèÒªÔÚ UIManager Àï¼Ó¸ö public GameObject levelUpPanel;
+    public UIManager uiManager; 
 
     void Awake() { Instance = this; }
 
     void Start()
     {
-        // ÓÎÏ·¿ªÊ¼£¬³õÊ¼»¯
         currentAge = 0;
         StartNextDecade();
     }
 
     void Update()
     {
-        if (isPaused) return; // ÔİÍ£Ê±²»×ßÊ±¼ä
+        if (isPaused) return;
 
-        // 1. Ê±¼äÁ÷ÊÅ (Ñ¹Á¦¼ÓËÙÂß¼­)
+        // 1. æ—¶é—´æµé€ (å‹åŠ›å½±å“é€»è¾‘)
         float timeMultiplier = 1f + (player.currentStress / 50f);
 
-        // ¼ì²éÑ¹Á¦ÊÇ·ñ±¬±í (±ÈÈç´óÓÚ100¾ÍËÀ)
-        if (player.currentStress > 100)
+        // æ£€æŸ¥å‹åŠ›æ˜¯å¦çˆ†è¡¨
+        if (player.currentStress > stressLimit)
         {
-            GameOver("Äã³ĞÊÜÁËÌ«¶àÑ¹Á¦£¬\nÔÚÖĞÍ¾±ÀÀ£µ¹ÏÂÁË...");
-            return; // ÕâÀïµÄ return ºÜÖØÒª£¬·ÀÖ¹ºóÃæ¼ÌĞøÅÜ
+            GameOver("å› ä¸ºæ‰¿å—äº†å¤ªå¤§çš„å‹åŠ›\nä½ çš„æ—…ç¨‹æå‰ç»“æŸäº†...");
+            return; 
         }
 
         timeRemaining -= Time.deltaTime * timeMultiplier;
 
-        // 2. ¸üĞÂ UI
-        EventManager.OnTimeChanged?.Invoke(timeRemaining, currentAge);
-        EventManager.OnStatsChanged?.Invoke(player.currentValue, player.currentWeight, player.currentStress);
+        // 2. ä¼˜åŒ– UI æ›´æ–° (é¢‘ç‡æ§åˆ¶)
+        // æ—¶é—´æ¯ 0.1 ç§’æ›´æ–°ä¸€æ¬¡
+        if (Mathf.Abs(timeRemaining - lastTimeSent) > 0.1f)
+        {
+            EventManager.OnTimeChanged?.Invoke(timeRemaining, currentAge);
+            lastTimeSent = timeRemaining;
+        }
 
-        // 3. ¼ì²é¹Ø¿¨½áÊø
+        // å±æ€§å˜åŒ–æ—¶è§¦å‘
+        if (player.currentValue != lastValueSent || player.currentWeight != lastWeightSent || player.currentStress != lastStressSent)
+        {
+            EventManager.OnStatsChanged?.Invoke(player.currentValue, player.currentWeight, player.currentStress);
+            lastValueSent = player.currentValue;
+            lastWeightSent = player.currentWeight;
+            lastStressSent = player.currentStress;
+        }
+
+        // 3. æ£€æŸ¥å…³å¡ç»“æŸ
         if (timeRemaining <= 0)
         {
             EndDecade();
         }
     }
 
-    // --- ºËĞÄÁ÷³Ì ---
-
-    // A. ¿ªÊ¼ĞÂµÄÊ®Äê
     public void StartNextDecade()
     {
         isPaused = false;
         timeRemaining = timeLimit;
+        lastTimeSent = timeLimit; // åˆå§‹åŒ–è®°å½•å™¨
 
-        // 1. µØÍ¼ÖØÖÃ
         mapSystem.GenerateWorld();
 
-        // 2. Íæ¼ÒÎ»ÖÃÖØÖÃ (¿ÉÑ¡£¬¿´ÄãÏë²»ÏëÈÃËû½Ó×ÅÅÜ)
         player.transform.position = Vector3.zero;
-        player.rb.velocity = Vector2.zero; // Çå³ı¹ßĞÔ
-        player.moveInput = Vector2.zero;   // Çå³ıÊäÈë
+        player.rb.velocity = Vector2.zero; 
+        player.moveInput = Vector2.zero;   
 
-        // 3. UI Òş²Ø
         uiManager.HideLevelUpPanel();
 
-        Debug.Log($"--- ½øÈë {currentAge} - {currentAge + ageStep} Ëê ---");
+        Debug.Log($"--- ç¬¬ {currentAge} - {currentAge + ageStep} å² ---");
     }
 
-    // B. Ê®Äê½áÊø£¬ÔİÍ£½áËã
     void EndDecade()
     {
-        isPaused = true; // ÔİÍ£ÓÎÏ·
+        isPaused = true; 
         currentAge += ageStep;
-        // --- ĞÂÔö£ºÇ¿ÖÆÉ²³µ ---
+        
         if (player != null)
         {
-            player.moveInput = Vector2.zero;    // Çå³ıÊäÈë
-            player.rb.velocity = Vector2.zero;  // Çå³ıÎïÀí¹ßĞÔ
+            player.moveInput = Vector2.zero;    
+            player.rb.velocity = Vector2.zero;  
         }
-        // --------------------
-
 
         if (currentAge >= 60)
         {
-            // È·±£µ÷ÓÃÁË GameOver£¬²¢ÇÒ UIManager ÄÜ¹»ÏÔÊ¾Ëü
-            GameOver("¹âÈÙÍËĞİ£¡\nÄã»îµ½ÁË60Ëê¡£");
+            GameOver("å²æœˆä¸é¥¶äººï¼š\nä½ å·²ç»æ´»åˆ°äº†60å²ã€‚");
         }
         else
         {
-            // »¹Ã»µ½ 60£¬ÏÔÊ¾Éı¼¶Ãæ°å
             uiManager.ShowLevelUpPanel(currentAge);
         }
     }
 
-    // C. Íæ¼ÒÔÚÃæ°åÉÏµã»÷°´Å¥ºóµ÷ÓÃ´Ë·½·¨
     public void OnStrategySelected(string strategyName)
     {
-        // 1. ÉèÖÃ²ßÂÔ
-        aiSystem.SetStrategyByName(strategyName); // ĞèÒªÔÚ AISystem ÀïĞ´Õâ¸ö·½·¨
-
-        // 2. ¿ªÊ¼ÏÂÒ»¹Ø
+        aiSystem.SetStrategyByName(strategyName); 
         StartNextDecade();
     }
-    // --- °ÑÕâ¸ö·½·¨²¹»Ø GameManager.cs ---
 
-    // µ± ItemEntity Åöµ½Íæ¼ÒÊ±»áµ÷ÓÃÕâ¸ö·½·¨
     public void OnItemCollected(ItemEntity itemEntity)
     {
-        // 1. Êı¾İ½øÈëÍæ¼Ò±³°ü
         if (player != null)
         {
             player.AddToBackpack(itemEntity.eventData);
         }
 
-        // 2. Ïú»Ù³¡¾°ÀïµÄÎïÌå
         if (itemEntity != null)
         {
-            Destroy(itemEntity.gameObject);
+            // ä»æ´»åŠ¨åˆ—è¡¨ä¸­ç§»é™¤ï¼Œé˜²æ­¢ AI ç»§ç»­è¿½è¸ª
+            if (mapSystem.spawnedItems.Contains(itemEntity))
+            {
+                mapSystem.spawnedItems.Remove(itemEntity);
+            }
+            // ä½¿ç”¨å¯¹è±¡æ± å›æ”¶ï¼Œè€Œä¸æ˜¯ç›´æ¥é”€æ¯
+            mapSystem.RecycleItem(itemEntity);
         }
     }
-    // --- Çë°ÑÕâ¶Î´úÂë¸´ÖÆµ½ GameManager ÀàµÄ×îºóÃæ ---
 
     public void GameOver(string reason)
     {
-        Debug.Log($"ÓÎÏ·½áÊø´¥·¢: {reason}"); // µ÷ÊÔÈÕÖ¾£¬°ïÄã¿´ÇåÊÇ²»ÊÇÕæµÄ´¥·¢ÁË
-
-        // 1. Í£Ö¹ÓÎÏ·Âß¼­
+        Debug.Log($"æ¸¸æˆç»“æŸ: {reason}"); 
         isPaused = true;
-
-        // 2. ·¢ËÍÊÂ¼ş¸ø UIManager (ÈÃËüµ¯´°)
-        // ×¢Òâ£ºÕâÀïÓÃ ?.Invoke ÊÇ·ÀÖ¹Ã»ÓĞÈË¶©ÔÄÊ±±¨´í
         EventManager.OnGameOver?.Invoke(reason);
 
-        // 3. ³¹µ×°´×¡Íæ¼Ò£¬·ÀÖ¹»¹ÔÚ±³¾°ÀïÂÒÅÜ
         if (player != null)
         {
             player.moveInput = Vector2.zero;

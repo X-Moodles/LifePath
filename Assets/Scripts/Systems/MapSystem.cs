@@ -3,17 +3,19 @@ using System.Collections.Generic;
 
 public class MapSystem : MonoBehaviour
 {
-    [Header("Config (ÅäÖÃ)")]
-    public Vector2 mapSize = new Vector2(20, 15); // µØÍ¼×Ü´óĞ¡
-    public int recursionDepth = 3; // µİ¹éÉî¶È (3²ã = 4^3 = 64¸ö¸ñ×Ó)
+    [Header("é…ç½®")]
+    public Vector2 mapSize = new Vector2(20, 15); 
+    public int recursionDepth = 3; 
 
-    [Header("References (ÒıÓÃ)")]
-    public GameObject itemPrefab; // ÎïÆ·µÄÔ¤ÖÆÌå (Step 2 ×öµÄ)
-    public ItemDatabase_SO itemDatabase; // ÎïÆ·Êı¾İ¿â (Step 1 ×öµÄ)
-    public Transform itemRoot; // Éú³ÉÎïÆ·µÄ¸¸½Úµã (ÎªÁËÕû½à)
+    [Header("å¼•ç”¨")]
+    public GameObject itemPrefab; 
+    public ItemDatabase_SO itemDatabase; 
+    public Transform itemRoot; 
 
-    // ´æ´¢Éú³ÉµÄÎïÆ·ÒıÓÃ£¬¹© AI ÏµÍ³Ê¹ÓÃ
     public List<ItemEntity> spawnedItems = new List<ItemEntity>();
+    
+    // å¯¹è±¡æ± 
+    private Queue<ItemEntity> itemPool = new Queue<ItemEntity>();
 
     void Start()
     {
@@ -22,44 +24,65 @@ public class MapSystem : MonoBehaviour
 
     public void GenerateWorld()
     {
-        // 1. ÇåÀí¾ÉÎïÆ· (Èç¹ûÓĞ)
+        // 1. å›æ”¶å½“å‰å±å¹•ä¸Šçš„æ‰€æœ‰ç‰©å“åˆ°å¯¹è±¡æ± 
         foreach (var item in spawnedItems)
         {
-            if (item != null) Destroy(item.gameObject);
+            if (item != null) RecycleItem(item);
         }
         spawnedItems.Clear();
 
-        // Éú³ÉÇ½±Ú (ĞÂÔö!)
         CreateBoundaries();
 
-        // 2. ¿ªÊ¼·ÖÖÎµİ¹é (Èë¿Ú)
-        // ¶¨Òå³õÊ¼ÇøÓòÎªÕû¸öµØÍ¼
+        // 2. é‡æ–°ç”Ÿæˆ
         Rect fullMap = new Rect(-mapSize.x / 2, -mapSize.y / 2, mapSize.x, mapSize.y);
         DivideAndConquer(fullMap, recursionDepth);
 
-        Debug.Log($"µØÍ¼Éú³ÉÍê±Ï£¡Éú³ÉÁË {spawnedItems.Count} ¸öÎïÆ·¡£");
+        Debug.Log($"åœ°å›¾ç”Ÿæˆå®Œæ¯•ï¼Œç”Ÿæˆäº† {spawnedItems.Count} ä¸ªç‰©å“");
     }
-    // ÔÚ MapSystem.cs ÖĞÌí¼ÓÕâ¸ö·½·¨
+
+    // å›æ”¶ç‰©å“åˆ°å¯¹è±¡æ± 
+    public void RecycleItem(ItemEntity item)
+    {
+        item.gameObject.SetActive(false);
+        itemPool.Enqueue(item);
+        
+        // å¦‚æœæ˜¯ä» spawnedItems ä¸­æ‰‹åŠ¨åˆ é™¤ï¼Œéœ€è¦å¤–éƒ¨å¤„ç†åˆ—è¡¨æ¸…ç†
+    }
+
+    // ä»å¯¹è±¡æ± è·å–æˆ–åˆ›å»ºæ–°ç‰©å“
+    private ItemEntity GetItemFromPool(Vector2 position)
+    {
+        ItemEntity entity;
+        if (itemPool.Count > 0)
+        {
+            entity = itemPool.Dequeue();
+            entity.gameObject.SetActive(true);
+            entity.transform.position = position;
+        }
+        else
+        {
+            GameObject go = Instantiate(itemPrefab, position, Quaternion.identity, itemRoot);
+            entity = go.GetComponent<ItemEntity>();
+        }
+        return entity;
+    }
+
     void CreateBoundaries()
     {
-        // 1. ´´½¨Ò»¸ö¿ÕÎïÌå×°Ç½±Ú (Èç¹ûÒÑÓĞÏÈÉ¾³ı)
         Transform wallParent = transform.Find("Walls");
         if (wallParent != null) Destroy(wallParent.gameObject);
 
         wallParent = new GameObject("Walls").transform;
         wallParent.SetParent(transform);
 
-        // 2. ¶¨ÒåÇ½±ÚµÄºñ¶È
         float thickness = 2f;
         float halfW = mapSize.x / 2f;
         float halfH = mapSize.y / 2f;
 
-        // 3. Éú³ÉËÄÃæÇ½ (ÉÏ¡¢ÏÂ¡¢×ó¡¢ÓÒ)
-        // ÕâÀïµÄÂß¼­ÊÇ£ºÎ»ÖÃ + ´óĞ¡
-        CreateOneWall(new Vector2(0, halfH + thickness / 2), new Vector2(mapSize.x + thickness * 2, thickness), wallParent); // Top
-        CreateOneWall(new Vector2(0, -halfH - thickness / 2), new Vector2(mapSize.x + thickness * 2, thickness), wallParent); // Bottom
-        CreateOneWall(new Vector2(-halfW - thickness / 2, 0), new Vector2(thickness, mapSize.y), wallParent); // Left
-        CreateOneWall(new Vector2(halfW + thickness / 2, 0), new Vector2(thickness, mapSize.y), wallParent); // Right
+        CreateOneWall(new Vector2(0, halfH + thickness / 2), new Vector2(mapSize.x + thickness * 2, thickness), wallParent); 
+        CreateOneWall(new Vector2(0, -halfH - thickness / 2), new Vector2(mapSize.x + thickness * 2, thickness), wallParent); 
+        CreateOneWall(new Vector2(-halfW - thickness / 2, 0), new Vector2(thickness, mapSize.y), wallParent); 
+        CreateOneWall(new Vector2(halfW + thickness / 2, 0), new Vector2(thickness, mapSize.y), wallParent); 
     }
 
     void CreateOneWall(Vector2 pos, Vector2 size, Transform parent)
@@ -68,66 +91,48 @@ public class MapSystem : MonoBehaviour
         wall.transform.SetParent(parent);
         wall.transform.position = pos;
 
-        // Ìí¼ÓÅö×²Ìå
         BoxCollider2D bc = wall.AddComponent<BoxCollider2D>();
         bc.size = size;
 
-        // ÉèÖÃ²ã¼¶ (Wall) »òÕßÊÇ Default£¬È·±£ Player ÄÜ×²ÉÏ
+        SpriteRenderer sr = wall.AddComponent<SpriteRenderer>();
+        sr.sprite = Resources.Load<Sprite>("Background");
     }
 
-
-    // --- ºËĞÄËã·¨£º·ÖÖÎ·¨ ---
     void DivideAndConquer(Rect currentArea, int depth)
     {
-        // [Conquer] µİ¹éÖÕÖ¹Ìõ¼ş£ºÉî¶ÈÎª0£¬²»ÔÙ·Ö¸î£¬Ö±½ÓÔÚÕâÀïÉú³ÉÎïÆ·
         if (depth == 0)
         {
             SpawnItemInArea(currentArea);
             return;
         }
 
-        // [Divide] ·Ö¸î£º½«µ±Ç°ÇøÓòÇĞ³É 4 ·İ (ËÄ²æÊ÷Ë¼Ïë)
         float halfW = currentArea.width / 2f;
         float halfH = currentArea.height / 2f;
 
-        // µİ¹éµ÷ÓÃ 4 ¸ö×ÓÏóÏŞ
-        // ×óÏÂ
         DivideAndConquer(new Rect(currentArea.x, currentArea.y, halfW, halfH), depth - 1);
-        // ÓÒÏÂ
         DivideAndConquer(new Rect(currentArea.x + halfW, currentArea.y, halfW, halfH), depth - 1);
-        // ×óÉÏ
         DivideAndConquer(new Rect(currentArea.x, currentArea.y + halfH, halfW, halfH), depth - 1);
-        // ÓÒÉÏ
         DivideAndConquer(new Rect(currentArea.x + halfW, currentArea.y + halfH, halfW, halfH), depth - 1);
     }
 
-    // ÔÚÖ¸¶¨ÇøÓòÄÚËæ»úÉú³ÉÒ»¸öÎïÆ·
     void SpawnItemInArea(Rect area)
     {
         if (itemDatabase == null || itemDatabase.allEvents.Count == 0) return;
 
-        // 1. Ëæ»ú×ø±ê (¼ÓÒ»µãÄÚËõ padding£¬·ÀÖ¹Éú³ÉÔÚ¸ñÏß±ßÔµ)
         float padding = 0.5f;
         Vector2 randomPos = new Vector2(
             Random.Range(area.xMin + padding, area.xMax - padding),
             Random.Range(area.yMin + padding, area.yMax - padding)
         );
 
-        // 2. Ëæ»úÊı¾İ (´ÓÊı¾İ¿âÀï³é¿¨)
         LifeEvent_SO randomData = itemDatabase.GetRandomEvent();
 
-        // 3. ÊµÀı»¯
-        GameObject go = Instantiate(itemPrefab, randomPos, Quaternion.identity, itemRoot);
-        ItemEntity entity = go.GetComponent<ItemEntity>();
-
-        // 4. ³õÊ¼»¯ÊµÌåÊı¾İ
+        // ä½¿ç”¨å¯¹è±¡æ± è·å–
+        ItemEntity entity = GetItemFromPool(randomPos);
         entity.Setup(randomData);
-
-        // 5. ×¢²áµ½ÁĞ±í
         spawnedItems.Add(entity);
     }
 
-    // [¼Ó·ÖÏî] ÔÚ Scene ´°¿Ú»­³ö·ÖÖÎµÄÍø¸ñÏß£¬´ğ±çÊ±¸øÀÏÊ¦¿´Õâ¸ö£¡
     void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
@@ -138,7 +143,6 @@ public class MapSystem : MonoBehaviour
     {
         if (depth == 0)
         {
-            // »­¸ñ×Ó±ß¿ò
             Gizmos.DrawWireCube(rect.center, rect.size);
             return;
         }

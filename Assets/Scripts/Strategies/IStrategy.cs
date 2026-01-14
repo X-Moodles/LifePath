@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 public interface IStrategy
 {
-    // ½Ó¿Ú·½·¨£º´«ÈëÍæ¼ÒÊµÌåºÍËùÓĞÎïÆ·£¬·µ»ØÒ»¸öÒÆ¶¯·½Ïò
+    // æ¥å£æ–¹æ³•ï¼šä¼ å…¥ç©å®¶å®ä½“å’Œæ‰€æœ‰ç‰©å“ï¼Œè¿”å›ä¸€ä¸ªç§»åŠ¨æ–¹å‘
     Vector2 CalculateMove(PlayerEntity player, List<ItemEntity> allItems);
 
-    // »ñÈ¡²ßÂÔÃû³Æ (ÓÃÓÚ UI ÏÔÊ¾)
+    // è·å–ç­–ç•¥åç§° (ç”¨äº UI æ˜¾ç¤º)
     string GetStrategyName();
 }
 

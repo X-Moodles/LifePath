@@ -3,14 +3,14 @@ using UnityEngine;
 public class StatsSystem : MonoBehaviour
 {
     [Header("Target Entity")]
-    public PlayerEntity playerEntity; // ÒıÓÃÍæ¼ÒÊµÌå
+    public PlayerEntity playerEntity; // å¼•ç”¨ç©å®¶å®ä½“
 
     [Header("Config")]
     public float baseSpeed = 5f;
     public float minSpeed = 1f;
     public float baseVisionScale = 3f;
 
-    // Ã¿Ò»Ö¡¼ÆËãÒ»´Î×´Ì¬
+    // æ¯ä¸€å¸§è®¡ç®—ä¸€æ¬¡çŠ¶æ€
     void FixedUpdate()
     {
         if (playerEntity == null) return;
@@ -19,56 +19,58 @@ public class StatsSystem : MonoBehaviour
         UpdateVisionPhysics();
     }
 
-    // ×ÓÏµÍ³ 1£º¶¯Á¦ÏµÍ³
+    // å­ç³»ç»Ÿ 1ï¼šåŠ¨åŠ›ç³»ç»Ÿ
     void UpdateMovementPhysics()
     {
-        // 1. »ñÈ¡ÊäÈë (Input Ò²¿ÉÒÔ·ÖÀë£¬µ«ÔİÇÒ·ÅÔÚÕâÀï»òÍâ²¿´«Èë)
+        // 1. è·å–è¾“å…¥ (Input ä¹Ÿå¯ä»¥åˆ†ç¦»ï¼Œä½†æš‚ä¸”æ”¾åœ¨è¿™é‡Œæˆ–å¤–éƒ¨ä¼ å…¥)
         //float x = Input.GetAxisRaw("Horizontal");
         //float y = Input.GetAxisRaw("Vertical");
         //Vector2 inputDir = new Vector2(x, y).normalized;
 
 
-        // Èç¹û AI ½Ó¹ÜÁË (ÓÉ AISystem ¿ØÖÆ)£¬ÕâÀï¿ÉÒÔÀ©Õ¹Âß¼­
-        // Ä¿Ç°ÏÈÖ»´¦ÀíÎïÀí×ª»»...
+        // å¦‚æœ AI æ¥ç®¡äº† (ç”± AISystem æ§åˆ¶)ï¼Œè¿™é‡Œå¯ä»¥æ‰©å±•é€»è¾‘
+        // ç›®å‰å…ˆåªå¤„ç†ç‰©ç†è½¬æ¢...
         Vector2 inputDir = playerEntity.moveInput.normalized;
 
-        // 2. ¼ÆËãËÙ¶È (¹«Ê½£º¸ºÖØÔ½¸ß£¬ËÙ¶ÈÔ½Âı)
+        // 2. è®¡ç®—é€Ÿåº¦ (å…¬å¼ï¼šè´Ÿé‡è¶Šé«˜ï¼Œé€Ÿåº¦è¶Šæ…¢)
         float weightRatio = (float)playerEntity.currentWeight / playerEntity.maxWeight;
-        weightRatio = Mathf.Clamp01(weightRatio); // ÏŞÖÆÔÚ 0-1
+        weightRatio = Mathf.Clamp01(weightRatio); // é™åˆ¶åœ¨ 0-1
 
         float currentSpeed = Mathf.Lerp(baseSpeed, minSpeed, weightRatio);
 
-        // 3. Ó¦ÓÃµ½ Rigidbody
+        // 3. åº”ç”¨åˆ° Rigidbody
         playerEntity.rb.MovePosition(playerEntity.rb.position + inputDir * currentSpeed * Time.fixedDeltaTime);
 
         
     }
 
-    // ×ÓÏµÍ³ 2£ºÊÓÒ°ÏµÍ³
+    // å­ç³»ç»Ÿ 2ï¼šè§†é‡ç³»ç»Ÿ
+    // ä¿®æ”¹ StatsSystem.cs ä¸­çš„ UpdateVisionPhysics æ–¹æ³•
     void UpdateVisionPhysics()
     {
-        // ¾É¹«Ê½£º¼ÛÖµÔ½¸ß£¬¿´µÃÔ½Ô¶
-        // ¼ÙÉèÃ¿ 20 µã¼ÛÖµÔö¼Ó 1 µ¥Î»°ë¾¶
-        //float targetScale = baseVisionScale + (playerEntity.currentValue / 20f);
+        // 1. è·å–å½“å‰ä»·å€¼ï¼Œä½†åŠ ä¸Šâ€œä¿åº•é™åˆ¶â€
+        // Mathf.Max(0, ...) ç¡®ä¿å‚ä¸è®¡ç®—çš„æ•°å€¼æ°¸è¿œä¸ä¼šå°äº 0
+        // è¿™æ ·å³ä½¿ currentValue æ˜¯ -500ï¼Œè¿™é‡Œä¹Ÿä¼šå½“æˆ 0 æ¥ç®—ï¼Œä¸ä¼šæŠ¥é”™
+        float safeValue = Mathf.Max(0f, playerEntity.currentValue);
 
-        // --- ¡¾ĞŞ¸Ä´úÂë¡¿¸ü¿ÆÑ§µÄÊÓÒ°¹«Ê½ ---
+        // 2. ä½¿ç”¨å®‰å…¨çš„å€¼è¿›è¡Œè®¡ç®— (ä¸ç®¡æ˜¯é™¤æ³•è¿˜æ˜¯å¯¹æ•°ï¼Œç°åœ¨éƒ½å®‰å…¨äº†)
+        // å¦‚æœä½ ç”¨çš„æ˜¯é™¤æ³•ï¼š
+        //float targetScale = baseVisionScale + (safeValue / 20f);
 
-        // ·½°¸£º¶ÔÊıÔö³¤ + ·â¶¥ÏŞÖÆ
-        // Mathf.Log(x) »áËæ×Å x ±ä´ó¶øÔö³¤µÃÔ½À´Ô½Âı
-        // ¾ÙÀı£º¼ÛÖµ100Ê±Ôö¼Ó4.6£¬¼ÛÖµ1000Ê±Ôö¼Ó6.9£¬²»»áÎŞÏŞÅòÕÍ
-        float addedScale = Mathf.Log(playerEntity.currentValue + 1f);
+        // å¦‚æœä½ ç”¨çš„æ˜¯å¯¹æ•° (Mathf.Log)ï¼š
+        float targetScale = baseVisionScale + Mathf.Log(safeValue + 1f);
 
-        // »ù´¡ÊÓÒ°(3) + Ôö³¤Öµ
-        float targetScale = baseVisionScale + addedScale;
+        // 3. ã€åŒé‡ä¿é™©ã€‘æ£€æŸ¥è®¡ç®—ç»“æœæ˜¯å¦æœ‰æ•ˆ
+        if (float.IsNaN(targetScale) || float.IsInfinity(targetScale))
+        {
+            targetScale = baseVisionScale; // å¦‚æœç®—å´©äº†ï¼Œå°±æ¢å¤é»˜è®¤å€¼
+        }
 
-        // ¡¾¹Ø¼ü¡¿Ç¿ÖÆ·â¶¥£¡×î´ó²»³¬¹ı 10 (Äã¿ÉÒÔ¸ù¾İÆÁÄ»´óĞ¡µ÷ÕûÕâ¸öÊı)
-        targetScale = Mathf.Clamp(targetScale, baseVisionScale, 10f);
-
-        // Æ½»¬¹ı¶ÉĞ§¹û
+        // 4. èµ‹å€¼
         playerEntity.visionRoot.localScale = Vector3.Lerp(
             playerEntity.visionRoot.localScale,
             new Vector3(targetScale, targetScale, 1),
-            Time.deltaTime * 2f
+            Time.fixedDeltaTime * 2f // æ³¨æ„ï¼šåœ¨ FixedUpdate é‡Œæœ€å¥½ç”¨ fixedDeltaTime
         );
     }
 }

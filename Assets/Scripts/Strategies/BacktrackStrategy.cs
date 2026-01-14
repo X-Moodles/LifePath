@@ -7,13 +7,13 @@ public class BacktrackStrategy : IStrategy
 
     public Vector2 CalculateMove(PlayerEntity player, List<ItemEntity> allItems)
     {
-        // Ä£Äâ»ØËİËã·¨µÄºÄÊ±£ºÃ¿¸ô 1 Ãë²Å¶¯Ò»´Î
+        // æ¨¡æ‹Ÿå›æº¯ç®—æ³•çš„è€—æ—¶ï¼šæ¯éš” 1 ç§’æ‰åŠ¨ä¸€æ¬¡
         thinkTimer += Time.deltaTime;
         if (thinkTimer < 1f)
         {
-            return Vector2.zero; // ÕıÔÚË¼¿¼ (¼ôÖ¦ÖĞ...)
+            return Vector2.zero; // æ­£åœ¨æ€è€ƒ (å‰ªæä¸­...)
         }
-        // Ë¼¿¼Íê±Ï£¬ÖØÖÃ¼ÆÊ±Æ÷ (ÎªÁËÆ½»¬£¬ÕâÀï¼òµ¥´¦Àí)
+        // æ€è€ƒå®Œæ¯•ï¼Œé‡ç½®è®¡æ—¶å™¨ (ä¸ºäº†å¹³æ»‘ï¼Œè¿™é‡Œç®€å•å¤„ç†)
         if (thinkTimer > 1.2f) thinkTimer = 0f;
 
         ItemEntity bestTarget = null;
@@ -23,7 +23,7 @@ public class BacktrackStrategy : IStrategy
         {
             if (item == null) continue;
 
-            // »ØËİ¼ôÖ¦Âß¼­£ºÖ»¿´µÍÑ¹Á¦µÄ°²È«Ñ¡Ïî
+            // å›æº¯å‰ªæé€»è¾‘ï¼šåªçœ‹ä½å‹åŠ›çš„å®‰å…¨é€‰é¡¹
             if (item.eventData.stress < minStress)
             {
                 minStress = item.eventData.stress;
@@ -38,5 +38,5 @@ public class BacktrackStrategy : IStrategy
         return Vector2.zero;
     }
 
-    public string GetStrategyName() => "ÍêÃÀÖ÷Òå (AI)";
+    public string GetStrategyName() => "å®Œç¾ä¸»ä¹‰ (AI)";
 }

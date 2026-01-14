@@ -1,19 +1,19 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
-// [CreateAssetMenu] ÈÃÎÒÃÇ¿ÉÒÔÖ±½ÓÔÚ Unity ±à¼­Æ÷ÓÒ¼ü´´½¨Õâ¸öÊı¾İÎÄ¼ş
+// [CreateAssetMenu] è®©æˆ‘ä»¬å¯ä»¥ç›´æ¥åœ¨ Unity ç¼–è¾‘å™¨å³é”®åˆ›å»ºè¿™ä¸ªæ•°æ®æ–‡ä»¶
 [CreateAssetMenu(fileName = "NewLifeEvent", menuName = "LifePath/Life Event Data")]
 public class LifeEvent_SO : ScriptableObject
 {
-    [Header("»ù±¾ĞÅÏ¢")]
-    public string eventName;      // ÀıÈç£º¿¼ÑĞ¡¢Í¨ÏüÓÎÏ·
-    [TextArea] public string description; // ÃèÊö£ºÒ»¶Î¼ò¶ÌµÄ¹ÊÊÂ
+    [Header("åŸºæœ¬ä¿¡æ¯")]
+    public string eventName;      // ä¾‹å¦‚ï¼šè€ƒç ”ã€é€šå®µæ¸¸æˆ
+    [TextArea] public string description; // æè¿°ï¼šä¸€æ®µç®€çŸ­çš„æ•…äº‹
 
-    [Header("ºËĞÄÊıÖµ")]
-    public int value;    // ¼ÛÖµ (Ó°ÏìÊÓÒ°)
-    public int weight;   // ºÄÊ±/ÖØÁ¿ (Ó°ÏìËÙ¶È)
-    public int stress;   // Ñ¹Á¦ (Ó°ÏìÊÙÃü/µ¹¼ÆÊ±)
+    [Header("æ ¸å¿ƒæ•°å€¼")]
+    public int value;    // ä»·å€¼ (å½±å“è§†é‡)
+    public int weight;   // è€—æ—¶/é‡é‡ (å½±å“é€Ÿåº¦)
+    public int stress;   // å‹åŠ› (å½±å“å¯¿å‘½/å€’è®¡æ—¶)
 
-    [Header("±íÏÖ")]
-    public Sprite icon;  // Í¼±ê
-    public Color tintColor = Color.white; // Çø·ÖÀàĞÍµÄÑÕÉ« (ÈçºìÉ«´ú±í¸ßÑ¹)
+    [Header("è¡¨ç°")]
+    public Sprite icon;  // å›¾æ ‡
+    public Color tintColor = Color.white; // åŒºåˆ†ç±»å‹çš„é¢œè‰² (å¦‚çº¢è‰²ä»£è¡¨é«˜å‹)
 }
